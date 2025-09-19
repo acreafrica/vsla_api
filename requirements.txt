@@ -1,0 +1,17 @@
+wheel
+fastapi[all]
+uvicorn[standard]
+SQLAlchemy
+psycopg2-binary
+python-dotenv
+pytest
+aioredis
+passlib[bcrypt]
+emails
+Jinja2
+alembic
+asyncpg
+python-jose[cryptography]
+itsdangerous
+pydantic-settings
+asyncodbc

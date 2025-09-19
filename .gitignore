@@ -1,0 +1,15 @@
+__pycache__
+local_settings.py
+flower_config.py
+celery_config.py
+*.log
+media/
+static/
+.env
+alembic/*
+flower_config.py
+*.pyc
+venv
+migrations/versions
+/migrations/versions
+migrations/versions/*

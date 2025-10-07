@@ -25,6 +25,7 @@ EXPECTED_COLUMNS = [
     "Group Name", "Country", "Province", "District", "Ward",
     "Member Name", "ID Number", "Phone Number", "Email", "Office Position","DOB"
 ]
+
 CONTRIBUTIONS_COLUMNS = ["member_phone", "month", "year", "amount"]
 VSLA_CONTRIBUTIONS_COLUMNS = ["group_name", "month", "year", "amount"]
 VSLA_MEMBERS_COLUMNS = [
@@ -190,271 +191,276 @@ def normalize_excel_date(value):
     raise ValueError(f"Unsupported DOB type: {type(value)}")
 @router.post("/upload_vsla/", tags=['vsla'])
 async def upload_vsla(file: UploadFile = File(...), db: AsyncSession = Depends(get_db_session),current_user = Depends(get_current_user)):
-    
-    if not file.filename.endswith(".xlsx"):
-        raise HTTPException(status_code=400, detail="Only .xlsx files are supported.")
-    currentpspId= current_user.id
-    
-    # Read Excel
-    #df = pd.read_excel(file.file)
-    # df = pd.read_excel(file.file, dtype={
-    #     "Group Name": str,
-    #     "Membership Number": str,
-    #     "Country": str,
-    #     "Province": str,
-    #     "District": str,
-    #     "Ward": str,
-    #     "Member Name": str,
-    #     "ID Number": str,
-    #     "Phone Number": str,
-    #     "Email": str,
-    #     "Office Position": str
-    # })
+    try:
+        if not file.filename.endswith(".xlsx"):
+            raise HTTPException(status_code=400, detail="Only .xlsx files are supported.")
+        currentpspId= current_user.id
+        
+        
+        # Read Excel
+        #df = pd.read_excel(file.file)
+        # df = pd.read_excel(file.file, dtype={
+        #     "Group Name": str,
+        #     "Membership Number": str,
+        #     "Country": str,
+        #     "Province": str,
+        #     "District": str,
+        #     "Ward": str,
+        #     "Member Name": str,
+        #     "ID Number": str,
+        #     "Phone Number": str,
+        #     "Email": str,
+        #     "Office Position": str
+        # })
 
-    # # Validate headers
-    # missing = set(EXPECTED_COLUMNS) - set(df.columns)
-    # if missing:
-    #     raise HTTPException(status_code=400, detail=f"Missing columns: {', '.join(missing)}")
-    # invalid_rows = []
+        # # Validate headers
+        # missing = set(EXPECTED_COLUMNS) - set(df.columns)
+        # if missing:
+        #     raise HTTPException(status_code=400, detail=f"Missing columns: {', '.join(missing)}")
+        # invalid_rows = []
 
-    # for index, row in df.iterrows():
-    #     try:
-    #         phone = str(row["Phone Number"]).strip()
-    #         if not phone.startswith("+"):
-    #             phone = "+" + phone
-    #         vsla_membersschema.Vsla_membersCreate(
-    #             member_name=row["Member Name"],
-    #             id_number=row["ID Number"],
-    #             phone_number=phone,
-    #             email=row["Email"],
-    #             office_position=row["Office Position"],
-    #             vsla_id=0,
-    #             vsls_id=0
-    #         )
-    #     except ValidationError as e:
-    #         print(f"Validation error in row {index + 2}: {e.errors()}")
-    #         phone = row.get("Phone Number", "unknown")
-    #     # Generic message including the phone number
-    #         invalid_rows.append({
-    #             "row": index + 2,  # Excel row number
-    #             "errors": [f"Invalid details for phone {phone}"]
-    #         })
-    #         raise HTTPException(
-    #         status_code=400,
-    #         detail={
-    #             "message": f"Invalid data in Excel at row {index + 2}",
-    #             "errors": str(e.errors()),
-    #             "phone": phone
-    #         }
-    #     )
+        # for index, row in df.iterrows():
+        #     try:
+        #         phone = str(row["Phone Number"]).strip()
+        #         if not phone.startswith("+"):
+        #             phone = "+" + phone
+        #         vsla_membersschema.Vsla_membersCreate(
+        #             member_name=row["Member Name"],
+        #             id_number=row["ID Number"],
+        #             phone_number=phone,
+        #             email=row["Email"],
+        #             office_position=row["Office Position"],
+        #             vsla_id=0,
+        #             vsls_id=0
+        #         )
+        #     except ValidationError as e:
+        #         print(f"Validation error in row {index + 2}: {e.errors()}")
+        #         phone = row.get("Phone Number", "unknown")
+        #     # Generic message including the phone number
+        #         invalid_rows.append({
+        #             "row": index + 2,  # Excel row number
+        #             "errors": [f"Invalid details for phone {phone}"]
+        #         })
+        #         raise HTTPException(
+        #         status_code=400,
+        #         detail={
+        #             "message": f"Invalid data in Excel at row {index + 2}",
+        #             "errors": str(e.errors()),
+        #             "phone": phone
+        #         }
+        #     )
 
-    # # if invalid_rows:
-    # #     raise HTTPException(
-    # #     status_code=400,
-    # #     detail={"message": "Invalid data in Excel", "invalid_rows": invalid_rows}
-    # # )
-    # for _, row in df.iterrows():
-    #     member = vslacsvmodel.Member(
-    #         group_name=row["Group Name"],
-    #         membership_number=row["Membership Number"],
-    #         country=row["Country"],
-    #         province=row["Province"],
-    #         district=row["District"],
-    #         ward=row["Ward"],
-    #         member_name=row["Member Name"],
-    #         id_number=row["ID Number"],
-    #         phone_number=row["Phone Number"],
-    #         email=row["Email"],
-    #         office_position=row["Office Position"]
-    #     )
-    #     phone = str(row["Phone Number"]).strip()
-    #     if not phone.startswith("+"):
-    #         phone = "+" + phone
-    #     vsla = vslamodel.Vsla(
-    #         vsla_group_name=member.group_name,
-    #         expected_membership_number=member.membership_number,
-    #         country=member.country,
-    #         province=member.province,
-    #         district=member.district,
-    #         ward=member.ward   ,
-    #         vsla_status="active" , # Default status
-    #         psp_id=currentpspId  # Associate with current PSP
-    #     )
-    #     vsla_member_details= vsla_membersModel.Vsla_members(  # Placeholder, will be updated after VSLA creation
-    #         member_name=member.member_name,
-    #         id_number=member.id_number,
-    #         phone_number=phone,
-    #         email=member.email,
-    #         office_position=member.office_position,vsla_id=0  # Placeholder, will be updated after VSLA creation
-    #     )
-    #     # vsla_member_schema = vsla_membersschema.Vsla_membersCreate(
-    #     #     member_name=member.member_name,
-    #     #     id_number=member.id_number,
-    #     #     phone_number=member.phone_number,
-    #     #     email=member.email,
-    #     #     office_position=member.office_position,vsla_id=0  # Placeholder, will be updated after VSLA creation
-    #     # )
-    #     current_vsla_id=0
-    #     vsla_exists = await crud.get_vsla_by_name(db, vsla_name=vsla.vsla_group_name, psp_id=currentpspId)
-    #     if vsla_exists:
-    #         vsla_member_details.vsla_id = vsla_exists.id
-    #         current_vsla_id = vsla_exists.id
-    #         print(f"VSLA group {vsla.vsla_group_name} already exists with ID {current_vsla_id}.")
-    #        # raise HTTPException(status_code=400, detail=f"VSLA group {vsla.vsla_group_name} already exists.")
-    #     else:
-    #         vsla = await crud.create_vsla(db=db, vsla=vsla,commit=False)
-    #         if not vsla:
-    #             print(f"Failed to create VSLA group {vsla.vsla_group_name}.")
-    #             #raise HTTPException(status_code=500, detail="Failed to create VSLA group.")
-    #         current_vsla_id = vsla.id
-    #         vsla_member_details.vsla_id = vsla.id
-           
-    #     vsla_member_exist=await vsla_membersCrud.get_vsla_by_phone(db=db,vsla_member_phone=vsla_member_details.phone_number,vsla_id=vsla_member_details.vsla_id)
-    #     if not vsla_member_exist:
-    #         vsla_member = await vsla_membersCrud.create_vsla_members( db=db, vsla_member=vsla_member_details, commit=False)
-    #         if not vsla_member:
-    #             print(f"Failed to create VSLA member {vsla_member_details.member_name} in VSLA {vsla.vsla_group_name}.")
-    #             #raise HTTPException(status_code=500, detail="Failed to create VSLA member.")
-    #         #print(f"VSLA member {vsla_member.member_name} created successfully in VSLA {vsla.vsla_group_name}.")
-    #     else:
-    #         print(f"VSLA member {vsla_member_details.member_name} already exists in VSLA {vsla.vsla_group_name}.")
-    #         vsla_updated_member=await crud.update_vsla_member_in_db(db=db,member_id=vsla_member_exist.id,member_update=vsla_membersschema.VslaMemberUpdate(
-    #             member_name=vsla_member_details.member_name,
-    #             phone_number=vsla_member_details.phone_number,
-    #             email=vsla_member_details.email,
-    #             office_position=vsla_member_details.office_position
-    #         ))
-    #     save_vsla_member=vsla_membersCrud
-
-
-    # await db.commit() 
-    # return {"message": "VSLA data uploaded successfully."} 
-    current_psp_id = current_user.id
-    df = pd.read_excel(file.file, dtype=str)
-
-    # Normalize column names
-    df.columns = [c.strip() for c in df.columns]
-
-    # Step 0: check phone format and schema validation
-    members_to_insert = []
-    phone_set = set()
-    for index, row in df.iterrows():
-        phone = str(row["Phone Number"]).strip()
-        if not phone.startswith("+"):
-            phone = "+" + phone
-
-        # Check duplicate phone in Excel
-        if phone in phone_set:
-            raise HTTPException(status_code=400, detail=f"Duplicate phone in Excel: {phone}")
-        phone_set.add(phone)
-        DOB =  normalize_excel_date(row["DOB"])
-        try:
+        # # if invalid_rows:
+        # #     raise HTTPException(
+        # #     status_code=400,
+        # #     detail={"message": "Invalid data in Excel", "invalid_rows": invalid_rows}
+        # # )
+        # for _, row in df.iterrows():
+        #     member = vslacsvmodel.Member(
+        #         group_name=row["Group Name"],
+        #         membership_number=row["Membership Number"],
+        #         country=row["Country"],
+        #         province=row["Province"],
+        #         district=row["District"],
+        #         ward=row["Ward"],
+        #         member_name=row["Member Name"],
+        #         id_number=row["ID Number"],
+        #         phone_number=row["Phone Number"],
+        #         email=row["Email"],
+        #         office_position=row["Office Position"]
+        #     )
+        #     phone = str(row["Phone Number"]).strip()
+        #     if not phone.startswith("+"):
+        #         phone = "+" + phone
+        #     vsla = vslamodel.Vsla(
+        #         vsla_group_name=member.group_name,
+        #         expected_membership_number=member.membership_number,
+        #         country=member.country,
+        #         province=member.province,
+        #         district=member.district,
+        #         ward=member.ward   ,
+        #         vsla_status="active" , # Default status
+        #         psp_id=currentpspId  # Associate with current PSP
+        #     )
+        #     vsla_member_details= vsla_membersModel.Vsla_members(  # Placeholder, will be updated after VSLA creation
+        #         member_name=member.member_name,
+        #         id_number=member.id_number,
+        #         phone_number=phone,
+        #         email=member.email,
+        #         office_position=member.office_position,vsla_id=0  # Placeholder, will be updated after VSLA creation
+        #     )
+        #     # vsla_member_schema = vsla_membersschema.Vsla_membersCreate(
+        #     #     member_name=member.member_name,
+        #     #     id_number=member.id_number,
+        #     #     phone_number=member.phone_number,
+        #     #     email=member.email,
+        #     #     office_position=member.office_position,vsla_id=0  # Placeholder, will be updated after VSLA creation
+        #     # )
+        #     current_vsla_id=0
+        #     vsla_exists = await crud.get_vsla_by_name(db, vsla_name=vsla.vsla_group_name, psp_id=currentpspId)
+        #     if vsla_exists:
+        #         vsla_member_details.vsla_id = vsla_exists.id
+        #         current_vsla_id = vsla_exists.id
+        #         print(f"VSLA group {vsla.vsla_group_name} already exists with ID {current_vsla_id}.")
+        #        # raise HTTPException(status_code=400, detail=f"VSLA group {vsla.vsla_group_name} already exists.")
+        #     else:
+        #         vsla = await crud.create_vsla(db=db, vsla=vsla,commit=False)
+        #         if not vsla:
+        #             print(f"Failed to create VSLA group {vsla.vsla_group_name}.")
+        #             #raise HTTPException(status_code=500, detail="Failed to create VSLA group.")
+        #         current_vsla_id = vsla.id
+        #         vsla_member_details.vsla_id = vsla.id
             
-            member = vsla_membersschema.Vsla_membersCreate(
-                member_name=row["Member Name"].strip(),
-                id_number=str(row["ID Number"]).strip(),
-                phone_number=phone,
-                email=row["Email"].strip(),
-                office_position=row["Office Position"].strip(),
-                vsla_id=0 , # placeholder
-                dob=DOB #str(row["DOB"]).strip()
-            )
-        except ValidationError as e:
-            
-            raise HTTPException(
-                status_code=400,
-                detail=f"row: {index + 2} with phone {phone}, errors: {str(e.errors()[0]['msg'])}"
-            )
+        #     vsla_member_exist=await vsla_membersCrud.get_vsla_by_phone(db=db,vsla_member_phone=vsla_member_details.phone_number,vsla_id=vsla_member_details.vsla_id)
+        #     if not vsla_member_exist:
+        #         vsla_member = await vsla_membersCrud.create_vsla_members( db=db, vsla_member=vsla_member_details, commit=False)
+        #         if not vsla_member:
+        #             print(f"Failed to create VSLA member {vsla_member_details.member_name} in VSLA {vsla.vsla_group_name}.")
+        #             #raise HTTPException(status_code=500, detail="Failed to create VSLA member.")
+        #         #print(f"VSLA member {vsla_member.member_name} created successfully in VSLA {vsla.vsla_group_name}.")
+        #     else:
+        #         print(f"VSLA member {vsla_member_details.member_name} already exists in VSLA {vsla.vsla_group_name}.")
+        #         vsla_updated_member=await crud.update_vsla_member_in_db(db=db,member_id=vsla_member_exist.id,member_update=vsla_membersschema.VslaMemberUpdate(
+        #             member_name=vsla_member_details.member_name,
+        #             phone_number=vsla_member_details.phone_number,
+        #             email=vsla_member_details.email,
+        #             office_position=vsla_member_details.office_position
+        #         ))
+        #     save_vsla_member=vsla_membersCrud
 
-        members_to_insert.append({
-            "member": member,
-            "group_name": row["Group Name"].strip(),
-            "membership_number": row.get("Membership Number", "0"),
-            "country": row.get("Country", ""),
-            "province": row.get("Province", ""),
-            "district": row.get("District", ""),
-            "ward": row.get("Ward", "")
-        })
 
-    # Step 1: Get existing VSLAs and member phones
-    stmt = select(vslamodel.Vsla).where(vslamodel.Vsla.psp_id == currentpspId)
-    result = await db.execute(stmt)
-    existing_vslas = {v.vsla_group_name.lower(): v for v in result.scalars().all()}
+        # await db.commit() 
+        # return {"message": "VSLA data uploaded successfully."} 
+        current_psp_id = current_user.id
+        df = pd.read_excel(file.file, dtype=str)
 
-    stmt2 = select(vsla_membersModel.Vsla_members.phone_number)
-    # .where(
-    #     vsla_membersModel.Vsla_members.psp_id == currentpspId
-    # )
-    result2 = await db.execute(stmt2)
-    existing_phones = set([p[0] for p in result2.all()])
+        # Normalize column names
+        df.columns = [c.strip() for c in df.columns]
 
-    # Step 2: Prepare VSLA objects and members
-    new_vslas = {}
-    member_objects = []
+        # Step 0: check phone format and schema validation
+        members_to_insert = []
+        phone_set = set()
+        for index, row in df.iterrows():
+            phone = str(row["Phone Number"]).strip()
+            if not phone.startswith("+"):
+                phone = "+" + phone
 
-    for m in members_to_insert:
-        gname_lower = m["group_name"].lower()
+            # Check duplicate phone in Excel
+            if phone in phone_set:
+                raise HTTPException(status_code=400, detail=f"Duplicate phone in Excel: {phone}")
+            phone_set.add(phone)
+            DOB =  normalize_excel_date(row["DOB"])
+            try:
+                
+                member = vsla_membersschema.Vsla_membersCreate(
+                    member_name=row["Member Name"].strip(),
+                    id_number=str(row["ID Number"]).strip(),
+                    phone_number=phone,
+                    email=row["Email"].strip(),
+                    office_position=row["Office Position"].strip(),
+                    vsla_id=0 , # placeholder
+                    dob=DOB #str(row["DOB"]).strip()
+                )
+            except ValidationError as e:
+                
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"row: {index + 2} with phone {phone}, errors: {str(e.errors()[0]['msg'])}"
+                )
 
-        # VSLA existence check
-        if gname_lower in existing_vslas:
-            vsla_obj = existing_vslas[gname_lower]
-        elif gname_lower in new_vslas:
-            vsla_obj = new_vslas[gname_lower]
-        else:
-            vsla_obj = vslamodel.Vsla(
-                vsla_group_name=m["group_name"],
-                expected_membership_number=int(m["membership_number"]),
-                country=m["country"],
-                province=m["province"],
-                district=m["district"],
-                ward=m["ward"],
-                vsla_status="active",
-                psp_id=currentpspId
-            )
-            db.add(vsla_obj)
-            await db.flush()  # ensures id is populated
-            new_vslas[gname_lower] = vsla_obj
+            members_to_insert.append({
+                "member": member,
+                "group_name": row["Group Name"].strip(),
+                "membership_number": row.get("Membership Number", "0"),
+                "country": row.get("Country", ""),
+                "province": row.get("Province", ""),
+                "district": row.get("District", ""),
+                "ward": row.get("Ward", "")
+            })
 
-        # Phone uniqueness check in DB
-        if m["member"].phone_number in existing_phones:
-            print(f"Phone {m['member'].phone_number} already exists in DB")
-            # raise HTTPException(
-            #     status_code=400,
-            #     detail=f"Phone {m['member'].phone_number} already exists in DB"
-            # )
-        else:
-            existing_phones.add(m["member"].phone_number)
+        # Step 1: Get existing VSLAs and member phones
+        stmt = select(vslamodel.Vsla).where(vslamodel.Vsla.psp_id == currentpspId)
+        result = await db.execute(stmt)
+        existing_vslas = {v.vsla_group_name.lower(): v for v in result.scalars().all()}
 
-        # Create member object
-            member_obj = vsla_membersModel.Vsla_members(
-                member_name=m["member"].member_name,
-                id_number=m["member"].id_number,
-                phone_number=m["member"].phone_number,
-                email=m["member"].email,
-                office_position=m["member"].office_position,
-                vsla_id=vsla_obj.id,
-                dob=m["member"].dob
+        stmt2 = select(vsla_membersModel.Vsla_members.phone_number)
+        # .where(
+        #     vsla_membersModel.Vsla_members.psp_id == currentpspId
+        # )
+        result2 = await db.execute(stmt2)
+        existing_phones = set([p[0] for p in result2.all()])
 
-            )
-            member_objects.append(member_obj)
-            db.add(member_obj)
-            await db.flush()  # to get member_obj.id
-            # Generate OTP (temp password)
-            otp = generate_otp_code()
+        # Step 2: Prepare VSLA objects and members
+        new_vslas = {}
+        member_objects = []
 
-            # Store in password table (separate model)
-            new_password_entry = vslapassword.VslaPassword(
-            vsla_id=member_obj.id,
-            hashed_password=hash_password(otp)
-            )
-            db.add(new_password_entry)
-            message=f"Welcome, You have been created as Bima Fund member. Your login phone: {member_obj.phone_number} and OTP/initial password: {otp}. Please change your password after first login."
-            await send_sms_via_gateway(
-                phone=member_obj.phone_number,message=message)
+        for m in members_to_insert:
+            gname_lower = m["group_name"].lower()
 
-    # Step 3: Commit once
-    await db.commit()
-    return {"message": f"{len(member_objects)} members uploaded successfully."}
+            # VSLA existence check
+            if gname_lower in existing_vslas:
+                vsla_obj = existing_vslas[gname_lower]
+            elif gname_lower in new_vslas:
+                vsla_obj = new_vslas[gname_lower]
+            else:
+                vsla_obj = vslamodel.Vsla(
+                    vsla_group_name=m["group_name"],
+                    expected_membership_number=int(m["membership_number"]),
+                    country=m["country"],
+                    province=m["province"],
+                    district=m["district"],
+                    ward=m["ward"],
+                    vsla_status="active",
+                    psp_id=currentpspId
+                )
+                db.add(vsla_obj)
+                await db.flush()  # ensures id is populated
+                new_vslas[gname_lower] = vsla_obj
+
+            # Phone uniqueness check in DB
+            if m["member"].phone_number in existing_phones:
+                print(f"Phone {m['member'].phone_number} already exists in DB")
+                # raise HTTPException(
+                #     status_code=400,
+                #     detail=f"Phone {m['member'].phone_number} already exists in DB"
+                # )
+            else:
+                existing_phones.add(m["member"].phone_number)
+
+            # Create member object
+                member_obj = vsla_membersModel.Vsla_members(
+                    member_name=m["member"].member_name,
+                    id_number=m["member"].id_number,
+                    phone_number=m["member"].phone_number,
+                    email=m["member"].email,
+                    office_position=m["member"].office_position,
+                    vsla_id=vsla_obj.id,
+                    dob=m["member"].dob
+
+                )
+                member_objects.append(member_obj)
+                db.add(member_obj)
+                await db.flush()  # to get member_obj.id
+                # Generate OTP (temp password)
+                otp = generate_otp_code()
+
+                # Store in password table (separate model)
+                new_password_entry = vslapassword.VslaPassword(
+                vsla_id=member_obj.id,
+                hashed_password=hash_password(otp)
+                )
+                db.add(new_password_entry)
+                message=f"Welcome, You have been created as Bima Fund member. Your login phone: {member_obj.phone_number} and OTP/initial password: {otp}. Please change your password after first login."
+                await send_sms_via_gateway(
+                    phone=member_obj.phone_number,message=message)
+
+        # Step 3: Commit once
+        await db.commit()
+        return {"message": f"{len(member_objects)} members uploaded successfully."}
+    except Exception as e:
+            raise HTTPException(status_code=400, detail=str(e))
+        
+        
 
 @router.post("/upload_vsla_members/", tags=['vsla'])
 async def upload_vsla_members(vsla_id:int,file: UploadFile = File(...), db: AsyncSession = Depends(get_db_session),current_user = Depends(get_current_user)):

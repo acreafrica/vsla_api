@@ -35,6 +35,8 @@ params = urllib.parse.quote_plus(
     "MARS_Connection=Yes;"
     )
 
+
+
 class Settings(BaseSettings):
     DEBUG: bool=True
     #API_V1_STR: str
@@ -79,9 +81,19 @@ class Settings(BaseSettings):
     ALLOWED_ORIGINS: List[str]= [
         "http://localhost:3000",
         "http://localhost:8000",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:8000",
         "http://localhost:8001"]
-    # ASYNC_DATABASE_URL:str = f"mssql+aioodbc:///?odbc_connect={params}"
-    ASYNC_DATABASE_URL: str= "mssql+aioodbc://sa:admin123@localhost,1433/vsla?driver=ODBC+Driver+17+for+SQL+Server&MARS_Connection=Yes"
+    
+    #ASYNC_DATABASE_URL:str = f"mssql+aioodbc:///?odbc_connect={params}"
+    # # vitalis 
+    # ASYNC_DATABASE_URL: str= "mssql+aioodbc://sa:admin123@localhost,1433/vsla?driver=ODBC+Driver+17+for+SQL+Server&MARS_Connection=Yes"
+    # # lennox 
+    ASYNC_DATABASE_URL: str = (
+        "mssql+aioodbc://sa:admin123@LENN\\SQLEXPRESS/vsla"
+        "?driver=ODBC+Driver+17+for+SQL+Server&TrustServerCertificate=Yes"
+    )
+
 
     EMAIL_TEMPLATES_DIR: str=""
     ACCOUNT_ACTIVATION_URL: str=""
@@ -92,6 +104,5 @@ class Settings(BaseSettings):
 
     class Config:
         case_sensitive = True
-
 
 settings = Settings()

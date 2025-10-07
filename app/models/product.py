@@ -9,7 +9,6 @@ def utc_now():
 
 class Product(Base):
     __tablename__ = "product"
-
     id = sa.Column(sa.Integer, primary_key=True, index=True)
     name = sa.Column(sa.String)
     sum_insured = sa.Column(sa.Integer)
@@ -20,5 +19,5 @@ class Product(Base):
     require_invoice = sa.Column(sa.Boolean, default=False)
     require_burial_cert = sa.Column(sa.Boolean, default=False)
     require_discharge_letter = sa.Column(sa.Boolean, default=False)
-
+    is_claimable = sa.Column(sa.Boolean, default=True)
     claims = relationship("claims", back_populates="producttype", cascade="all, delete-orphan")

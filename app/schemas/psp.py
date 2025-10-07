@@ -34,4 +34,4 @@ class psp(pspBase):
     is_admin: bool=False
 
     class Config:
-        orm_mode = True
+        from_attributes = True

@@ -21,9 +21,13 @@ EXPECTED_COLUMNS = [
 ]
 CONTRIBUTIONS_COLUMNS = ["member_phone", "month", "year", "amount"]
 @router.post("/products/", response_model=productschema.Product, tags=['products'])
-async def create_product(product: productschema.ProductCreate, db: AsyncSession = Depends(get_db_session)):
-    db_product = await product_crud.create_product(db, product=product,commit=True)
-    
+async def create_or_update_product(product: productschema.ProductCreateOrUpdate, db: AsyncSession = Depends(get_db_session)):
+    db_product = await product_crud.create_or_update_product(db, product=product,commit=True)
+    return db_product
+
+@router.post("/products/delete", tags=['products'])
+async def delete_product(product: productschema.ProductDelete, db: AsyncSession = Depends(get_db_session)):
+    db_product = await product_crud.delete_product(db, product=product,commit=True)
     return db_product
 
 @router.get("/products/", response_model=List[productschema.Product],tags=['products'])

@@ -20,24 +20,31 @@ async def logout(token: str = Depends(oauth2_scheme)):
     if not success:
         raise HTTPException(status_code=400, detail="Invalid token")
     return {"msg": "Logged out successfully"}
+
 @router.post("/login/",tags=['auth'])
 async def login(data: PspLogin.PspLogin, db: AsyncSession = Depends(get_db_session)):
-    result = await db.execute(select(PspModel.PspModel).where(PspModel.PspModel.phone_number == data.phone))
-    user = result.scalars().first()#.scalar_one_or_none()
-    if not user:
-        raise HTTPException(status_code=401, detail="Account does not exist")
+    try:
+        result = await db.execute(select(PspModel.PspModel).where(PspModel.PspModel.phone_number == data.phone))
+        user = result.scalars().first()#.scalar_one_or_none()
+        if not user:
+            raise HTTPException(status_code=401, detail="Account does not exist")
 
-    if user.approval_status != "approved":
-        raise HTTPException(status_code=403, detail="Account pending approval")
+        if user.approval_status != "approved":
+            raise HTTPException(status_code=403, detail="Account pending approval")
 
-    result = await db.execute(select(PspPassword.PspPassword).where(PspPassword.PspPassword.psp_id == user.id))
-    password_row = result.scalars().first()#.scalar_one_or_none()
+        result = await db.execute(select(PspPassword.PspPassword).where(PspPassword.PspPassword.psp_id == user.id))
+        password_row = result.scalars().first()#.scalar_one_or_none()
 
-    if not password_row or not verify_password(data.password, password_row.hashed_password):
-        raise HTTPException(status_code=401, detail="Invalid phone or password")
-    
-    token = create_access_token(data={"sub": str(user.id), "email": user.email,"usertype": "psp"})
-    return {"access_token": token, "token_type": "bearer", "psp_id": user.id, "psp_name": user.first_name, "admin": user.is_admin}
+        if not password_row or not verify_password(data.password, password_row.hashed_password):
+            raise HTTPException(status_code=401, detail="Invalid phone or password")
+        
+        # we also need to know if a personn is admin or not 
+        token = create_access_token(data={"sub": str(user.id), "email": user.email,"usertype": "psp", "is_admin" : user.is_admin})
+        return {"access_token": token, "token_type": "bearer", "psp_id": user.id, "psp_name": user.first_name, "admin": user.is_admin}
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=403, detail="Something unexpected has occured!!")
+        
 
 @router.post("/vsla_login/",tags=['auth'])
 async def vsla_login(data: PspLogin.vslaLogin, db: AsyncSession = Depends(get_db_session)):
@@ -97,7 +104,7 @@ async def vsla_login(data: PspLogin.vslaLogin, db: AsyncSession = Depends(get_db
     if not password_row or not verify_password(data.password, password_row.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid phone number or password")
     
-    token = create_access_token(data={"sub": str(user.id), "email": user.email,"usertype": "vsla_member"})
+    token = create_access_token(data={"sub": str(user.id), "email": user.email,"usertype": "vsla_member", "is_admin" : user.is_admin})
     return {"access_token": token, "token_type": "bearer", "vsla_id": user.vsla_id, "member_id": user.id, "member_type": user.office_position, "member_name": user.member_name}
 
 @router.post("/psp_reset_request/", tags=["auth"])

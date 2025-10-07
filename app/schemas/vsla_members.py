@@ -54,7 +54,7 @@ class Vsla_members(Vsla_membersBase):
     created_at: Optional[datetime] = None
     Updated_at: Optional[datetime] = None
     class Config:
-        orm_mode = True
+        from_attributes = True
 class VslaMemberUpdate(BaseModel):
     member_name: Optional[str] = None
     id_number: Optional[str] = None

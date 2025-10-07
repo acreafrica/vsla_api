@@ -15,3 +15,7 @@ python-jose[cryptography]
 itsdangerous
 pydantic-settings
 asyncodbc
+phonenumbers
+pandas
+pyodbc
+openpyxl

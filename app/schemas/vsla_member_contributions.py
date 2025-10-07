@@ -24,5 +24,5 @@ class Vsla_members_contributions(Vsla_members_contributionsBase):
     Updated_at: Optional[datetime] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 

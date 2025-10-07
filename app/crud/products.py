@@ -16,6 +16,7 @@ async def get_product(product_id: int,db: AsyncSession, skip: int = 0, limit: in
     await db.commit()
     return result.scalars().one_or_none()
 
+
 async def get_all_products(db: AsyncSession)   :
     result = await db.execute(
         select(productmodel.Product)
@@ -23,16 +24,67 @@ async def get_all_products(db: AsyncSession)   :
     )
     return result.scalars().all()
 
-async def create_product(db: AsyncSession, product: productschema.ProductCreate,commit=True):
-    obj_in_data = jsonable_encoder(product, exclude_unset=True)
-    db_product = productmodel.Product(**obj_in_data)
-    db.add(db_product)
-    if commit:
-        await db.commit()
-    else:
-        await db.flush()
- 
-    return db_product
+
+async def create_or_update_product(
+    db: AsyncSession, product: productschema.ProductCreateOrUpdate, commit: bool = True
+):
+    
+    try:
+        # If updating (id provided)
+        if product.id is not None:
+            # here we update the items of this product 
+            result = await db.execute(
+                select(productmodel.Product).filter(productmodel.Product.id == product.id)
+            )
+            db_product = result.scalar_one_or_none()
+            if db_product:
+                # update fields
+                for key, value in vars(product).items():
+                    setattr(db_product, key, value)
+                if commit:
+                    await db.commit()
+                    await db.refresh(db_product)
+                else:
+                    await db.flush()
+                return db_product
+            return None
+        
+        # Otherwise create new
+        db_product = productmodel.Product(**vars(product))
+        db.add(db_product)
+        if commit:
+            await db.commit()
+            await db.refresh(db_product)
+        else:
+            await db.flush()
+
+        return db_product
+    except Exception as e:
+        print(e)
+        raise(e)
+
+
+
+async def delete_product(
+    db: AsyncSession, product: productschema.ProductDelete, commit: bool = True
+):
+    try:
+        if product.id is not None:
+            result = await db.execute(
+                select(productmodel.Product).filter(productmodel.Product.id == product.id)
+            )
+            db_product = result.scalar_one_or_none()
+            if db_product:
+                await db.delete(db_product)
+                if commit:
+                    await db.commit()
+                else:
+                    await db.flush()
+                return {"deleted_product_id": product.id}
+            return None
+    except Exception as e:
+        print(e)
+        raise(e)
 
 
 

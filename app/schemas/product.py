@@ -2,6 +2,7 @@ from typing import List, Optional
 from datetime import datetime, date
 #from pydantic import BaseModel
 from app.schemas.base import BaseSchema
+from typing import ClassVar
 
 class ProductBase(BaseSchema):
     name: str
@@ -12,6 +13,7 @@ class ProductBase(BaseSchema):
     require_invoice: Optional[bool] = False 
     require_burial_cert: Optional[bool] = False
     require_discharge_letter: Optional[bool] = False
+    is_claimable: Optional[bool] = False
   
     #created_at: Optional[datetime] Optional[str]
     class Config:
@@ -20,6 +22,15 @@ class ProductBase(BaseSchema):
 
 class ProductCreate(ProductBase):
     pass
+    
+
+
+class ProductCreateOrUpdate(ProductBase):
+    id: Optional[int] = None
+    
+class ProductDelete(BaseSchema):
+    id: int
+
 
 class Product(ProductBase):
     id: int
@@ -27,4 +38,4 @@ class Product(ProductBase):
     Updated_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True

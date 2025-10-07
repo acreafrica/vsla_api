@@ -17,7 +17,7 @@ class claims(claimCreate):
     created_at: datetime
     updated_at: datetime 
     class Config:
-        orm_mode = True
+        from_attributes = True
 class ClaimDocumentBase(BaseSchema):
     claim_id: int
     doc_type: str   # medical, invoice, burial_cert, etc.
@@ -31,7 +31,7 @@ class ClaimDocument(ClaimDocumentBase):
     created_at: datetime
     uploaded_at: datetime
     class Config:
-        orm_mode = True
+        from_attributes = True
 class ClaimReviewBase(BaseSchema):
     claim_id: int
     reviewer_id: int
@@ -47,7 +47,7 @@ class ClaimReview(ClaimReviewBase):
     reviewed_at: datetime
     created_at: datetime
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class ClaimApprovalBase(BaseSchema):
     claim_id: int
@@ -65,7 +65,7 @@ class ClaimApproval(ClaimApprovalBase):
     approved_at: datetime
     created_at: datetime
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class ClaimStatusSummary(BaseSchema):
     status: str

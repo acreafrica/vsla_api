@@ -13,3 +13,4 @@ venv
 migrations/versions
 /migrations/versions
 migrations/versions/*
+uploaded_files/

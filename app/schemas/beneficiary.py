@@ -6,7 +6,7 @@ from app.schemas.phone_validator import PhoneNumber
 
 class BeneficiaryBase(BaseSchema):
     name: str
-    phone_number: PhoneNumber
+    phone_number: Optional[PhoneNumber] = None
     relationship_type: str
     nrc_number: str
     vsla_member_id: int

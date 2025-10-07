@@ -4,7 +4,7 @@
 from fastapi import APIRouter, Depends
 
 from app.api.v1.endpoints import (
-    users,webhooks,psp,vsla,auth,claims,product,beneficiary
+    users,webhooks,psp,vsla,auth,claims,product,beneficiary,paypremium
     
 )
 
@@ -17,4 +17,5 @@ router.include_router(auth.router)
 router.include_router(claims.router)  
 router.include_router(product.router)
 router.include_router(beneficiary.router)
+router.include_router(paypremium.router)
 # router.include_router(test.router, prefix="/test")

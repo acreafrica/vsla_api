@@ -2,8 +2,8 @@ import requests
 # https://test.543.cgrate.co.zm:8443/Konik/KonikWs or http://test.543.cgrate.co.zm:55555/Konik/KonikWs
 # Configurable variables
 BASE_URL = "http://test.543.cgrate.co.zm:55555"       # replace with actual endpoint
-USERNAME = "1758019102130"                    # replace with actual username
-PASSWORD = "zd9X6N3l"                # replace with actual password
+USERNAME = "1758019102130"                    # replace with actual username http://test.543.cgrate.co.zm:55555
+PASSWORD = "LeB6zI2K"                # replace with actual password
 
 url = f"{BASE_URL}/Konik/KonikWs"
 
@@ -27,8 +27,8 @@ payload = f"""<?xml version="1.0" encoding="UTF-8"?>
     <soapenv:Body>
         <kon:processCashDeposit>
             <transactionAmount>5</transactionAmount>
-            <customerAccount>097759676</customerAccount>
-            <issuerName>Airtel</issuerName>
+            <customerAccount>260950261186</customerAccount>
+            <issuerName>zamtel</issuerName>
             <depositorReference>f098a4f3-392f-44d4-b10a-1f7737091f2d</depositorReference>
         </kon:processCashDeposit>
     </soapenv:Body>

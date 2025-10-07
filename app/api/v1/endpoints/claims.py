@@ -15,6 +15,11 @@ from pathlib import Path
 from typing import Literal
 UPLOAD_DIR = Path("uploaded_files")
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)  # Create folder if it doesn't exist
+ALLOWED_FILE_TYPES = [
+    "application/pdf",
+    "image/jpeg",
+    "image/png"
+]
 #from sql_app.database import SessionLocal, engine
 
 
@@ -61,6 +66,8 @@ async def create_claim(claim_obj: str = Form(...), db: AsyncSession = Depends(ge
         "discharge_letter": discharge_letter
     }.items():
         if file is not None:
+            if file.content_type not in ALLOWED_FILE_TYPES:
+                raise HTTPException(status_code=400, detail=f"Invalid file type for {field_name}. Allowed types are: {', '.join(ALLOWED_FILE_TYPES)}")
             file_path = UPLOAD_DIR / file.filename
             with open(file_path, "wb") as f:
                 f.write(await file.read())
@@ -68,7 +75,7 @@ async def create_claim(claim_obj: str = Form(...), db: AsyncSession = Depends(ge
             claim_doc = claimschema.ClaimDocumentCreate(
                 claim_id=new_claim.id,
                 doc_type=field_name,
-                file_url=str(file_path)
+                file_url=str(file.filename)
             )
             #setattr(clai, field_name, file.filename)
             new_claim_doc=await crud.create_claim_document(db=db,document=claim_doc)

@@ -86,6 +86,7 @@ class Settings(BaseSettings):
     EMAIL_TEMPLATES_DIR: str=""
     ACCOUNT_ACTIVATION_URL: str=""
     TEST_EMAIL: EmailStr="vkoech@acreafrica.com"
+    LIPILA_URL:str = "https://lipila-uat.hobbiton.app/transactions/mobile-money"
 
     
 

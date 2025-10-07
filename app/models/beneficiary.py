@@ -14,7 +14,7 @@ class Beneficiary(Base):
     name = sa.Column(sa.String)
     phone_number = sa.Column(sa.String)
     relationship_type = sa.Column(sa.String)
-    nrc_number = sa.Column(sa.String)
+    nrc_number = sa.Column(sa.String, unique=True, index=True)
     vsla_member_id = sa.Column(sa.Integer, sa.ForeignKey("vsla_members.id"))
     created_at = sa.Column(sa.DateTime(), default=utc_now)
     Updated_at = sa.Column(sa.DateTime(), default=utc_now,onupdate=utc_now)

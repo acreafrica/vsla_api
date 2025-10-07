@@ -20,5 +20,6 @@ class Product(Base):
     require_invoice = sa.Column(sa.Boolean, default=False)
     require_burial_cert = sa.Column(sa.Boolean, default=False)
     require_discharge_letter = sa.Column(sa.Boolean, default=False)
+    is_claimable = sa.Column(sa.Boolean, default=False)
 
     claims = relationship("claims", back_populates="producttype", cascade="all, delete-orphan")

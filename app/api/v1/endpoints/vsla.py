@@ -151,6 +151,9 @@ async def read_vsla(skip: int = 0, limit: int = 100, db: AsyncSession = Depends(
 @router.get("/vsla_members/",response_model=List[vsla_membersschema.Vsla_members], tags=['vsla'])
 async def read_vsla_members_per_vsla(vsla_id:int,skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db_session),current_user= Depends(get_current_user)):
    # vsla = await crud.get_all_vsla(db, skip=skip, limit=limit)
+    if current_user.usertype == "vsla_member":
+        if current_user.id != vsla_id:
+            raise HTTPException(status_code=403, detail="Not authorized to view other VSLA members")
     vsla=await crud.get_vsla_members_vsla(vsla_id=vsla_id, db=db, skip=skip, limit=limit)
     if not vsla:
         raise HTTPException(status_code=404, detail="No VSLA_members found for the current vsla")
